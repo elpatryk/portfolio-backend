@@ -8,6 +8,8 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
+      user.belongsTo(models.team);
+      user.hasMany(models.pitchReservation);
       user.belongsTo(models.team, { foreignKey: "teamId" });
     }
   }
@@ -19,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
       imgUrl: { type: DataTypes.STRING },
       isCoach: { type: DataTypes.BOOLEAN },
       birthday: { type: DataTypes.DATE },
-      phone: { type: DataTypes.INTEGER },
+
       password: { type: DataTypes.STRING, allowNull: false },
       teamId: { type: DataTypes.INTEGER, allowNull: true },
     },

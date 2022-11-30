@@ -28,8 +28,8 @@ module.exports = {
         onDelete: "CASCADE",
         onUpdate: "CASCADE",
       },
-      amount: {
-        type: Sequelize.INTEGER,
+      teamReservation: {
+        type: Sequelize.BOOLEAN,
         allowNull: true,
       },
       date: {

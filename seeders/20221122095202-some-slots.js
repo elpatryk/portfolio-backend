@@ -4,20 +4,20 @@ const bcrypt = require("bcrypt");
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.bulkInsert(
-      "categories",
+      "slots",
       [
         {
-          name: "League",
+          timeSlots: "16:00-18:00",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
-          name: "Tournament",
+          timeSlots: "18:00-20:00",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
-          name: "Meeting",
+          timeSlots: "20:00-22:00",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -27,6 +27,6 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkDelete("categories", null, {});
+    await queryInterface.bulkDelete("slots", null, {});
   },
 };

@@ -3,12 +3,12 @@ const { Router } = require("express");
 const { toJWT } = require("../auth/jwt");
 const authMiddleware = require("../auth/middleware");
 const User = require("../models/").user;
+const Team = require("../models/").team;
 const { SALT_ROUNDS } = require("../config/constants");
 
 const router = new Router();
 
-
-//login 
+//login
 router.post("/login", async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -19,7 +19,10 @@ router.post("/login", async (req, res, next) => {
         .send({ message: "Please provide both email and password" });
     }
 
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({
+      where: { email },
+      include: { model: Team },
+    });
 
     if (!user || !bcrypt.compareSync(password, user.password)) {
       return res.status(400).send({
@@ -29,13 +32,12 @@ router.post("/login", async (req, res, next) => {
 
     delete user.dataValues["password"]; // don't send back the password hash
     const token = toJWT({ userId: user.id });
-    return res.status(200).send({ token, user: user.dataValues });
+    return res.status(200).send({ token, user: user });
   } catch (error) {
     console.log(error);
     return res.status(400).send({ message: "Something went wrong, sorry" });
   }
 });
-
 
 //signup
 router.post("/signup", async (req, res) => {
@@ -72,8 +74,14 @@ router.post("/signup", async (req, res) => {
 // - checking if a token is (still) valid
 router.get("/me", authMiddleware, async (req, res) => {
   // don't send back the password hash
+
   delete req.user.dataValues["password"];
-  res.status(200).send({ ...req.user.dataValues });
+
+  const { id } = req.user;
+
+  const user = await User.findByPk(id, { include: { model: Team } });
+
+  res.status(200).send({ user });
 });
 
 module.exports = router;
