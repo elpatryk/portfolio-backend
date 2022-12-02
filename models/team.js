@@ -13,8 +13,8 @@ module.exports = (sequelize, DataTypes) => {
         through: "eventParticipations",
         foreignKey: "teamId",
       });
-      team.hasMany(models.matches, { foreignKey: "teamA" });
-      team.hasMany(models.matches, { foreignKey: "teamB" });
+      team.hasMany(models.matches, { foreignKey: "teamA", as: "team_A" });
+      team.hasMany(models.matches, { foreignKey: "teamB", as: "team_B" });
     }
   }
   team.init(

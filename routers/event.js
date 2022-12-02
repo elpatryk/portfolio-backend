@@ -2,7 +2,7 @@ const { Router, application } = require("express");
 const authMiddleware = require("../auth/middleware");
 const router = new Router();
 
-const Teams = require("../models").team;
+const Team = require("../models").team;
 const Events = require("../models").event;
 const EventParticipation = require("../models").eventParticipation;
 const Match = require("../models").matches;
@@ -23,7 +23,7 @@ router.get("/:id", async (request, response, next) => {
   try {
     const eventId = request.params.id;
     const events = await Events.findByPk(eventId, {
-      include: { model: Teams },
+      include: { model: Team },
     });
     response.send(events);
   } catch (e) {
@@ -69,74 +69,13 @@ router.post("/join", authMiddleware, async (req, res, next) => {
   }
 });
 
-// start tournament -> get list of teams for that event, generate matches
-// router.get("/:id/teams", async (req, res, next) => {
-//   try {
-//     console.log("here");
-//     const { id } = req.params;
-//     const eventTeams = await Events.findByPk(id, {
-//       include: {
-//         model: Teams,
-//         attributes: ["id"],
-//         through: { attributes: [] },
-//       },
-//     });
-//     const { teams } = eventTeams.toJSON();
-//     // console.log("to map", teams);
-
-//     const shuffleTeams = teams.sort(() => Math.random() - 0.5);
-//     console.log("shuffled array", shuffleTeams);
-
-//     //create the matches for 1 round
-
-//     if (eventTeams.capacity === 4) {
-//       const firstMatch = shuffleTeams.slice(0, 2);
-//       const secondMatch = shuffleTeams.slice(2, 4);
-//       console.log("first match :", firstMatch);
-//       console.log("second match :", secondMatch);
-
-//       //ideally, we would do this inside a map
-//       await Match.create({
-//         teamA: firstMatch[0].id,
-//         teamB: firstMatch[1].id,
-//         eventId: eventTeams.id,
-//         round: 1,
-//       });
-
-//       await Match.create({
-//         teamA: secondMatch[0].id,
-//         teamB: secondMatch[1].id,
-//         eventId: eventTeams.id,
-//         round: 1,
-//       });
-//     }
-
-//     if (eventTeams.capacity === 8) {
-//       const firstMatch = shuffleTeams.slice(0, 2);
-//       const secondMatch = shuffleTeams.slice(2, 4);
-//       const thirdMatch = shuffleTeams.slice(4, 6);
-//       const fourthMatch = shuffleTeams.slice(6, 8);
-
-//       console.log("first match :", firstMatch);
-//       console.log("second match :", secondMatch);
-//       console.log("third match ", thirdMatch);
-//       console.log("fourth match: ", fourthMatch);
-//     }
-
-//     res.send(teams);
-//   } catch (e) {
-//     console.log(e);
-//     next(e);
-//   }
-// });
-
 router.post("/:id/start", async (request, response, next) => {
   try {
     const { id } = request.params;
     //get a tournament with its participants
     const event = await Events.findByPk(id, {
       include: {
-        model: Teams,
+        model: Team,
         attributes: ["id"],
         through: { attributes: [] },
       },
@@ -177,7 +116,7 @@ router.post("/:id/start", async (request, response, next) => {
     const eventWithMatches = await Events.findByPk(id, {
       include: {
         model: Match,
-        include: Teams,
+        include: ["team_A", "team_B"],
       },
     });
 
@@ -187,5 +126,24 @@ router.post("/:id/start", async (request, response, next) => {
     next(e);
   }
 });
+
+router.get("/matches/:id", async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const matches = await Match.findAll({
+      include: ["team_A", "team_B"],
+      where: { eventId: id },
+    });
+    console.log("matches HERE:", matches);
+    res.send(matches);
+  } catch (e) {
+    next(e);
+  }
+});
+
+//Generate next round
+//POST request
+//BODY info => array of team ids, round
+//PARAMS => eventId
 
 module.exports = router;
