@@ -9,12 +9,24 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       teamA: {
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
         allowNull: true,
+        references: {
+          model: "teams",
+          key: "id",
+        },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       },
       teamB: {
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
         allowNull: true,
+        references: {
+          model: "teams",
+          key: "id",
+        },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       },
       teamAScore: {
         type: Sequelize.INTEGER,

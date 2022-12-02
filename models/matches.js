@@ -9,6 +9,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       matches.belongsTo(models.event, { foreignKey: "eventId" });
+      matches.belongsTo(models.team, { foreignKey: "teamA" });
+      matches.belongsTo(models.team, { foreignKey: "teamB" });
     }
   }
   matches.init(
