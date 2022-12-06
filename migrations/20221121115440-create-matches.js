@@ -39,6 +39,12 @@ module.exports = {
       winnerId: {
         type: Sequelize.INTEGER,
         allowNull: true,
+        references: {
+          model: "teams",
+          key: "id",
+        },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       },
       eventId: {
         type: Sequelize.INTEGER,

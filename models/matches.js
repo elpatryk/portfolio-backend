@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       matches.belongsTo(models.event, { foreignKey: "eventId" });
       matches.belongsTo(models.team, { foreignKey: "teamA", as: "team_A" });
       matches.belongsTo(models.team, { foreignKey: "teamB", as: "team_B" });
+      matches.belongsTo(models.team, { foreignKey: "winnerId", as: "winner" });
     }
   }
   matches.init(
