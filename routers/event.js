@@ -158,37 +158,61 @@ router.patch("/matches/results/:id", async (req, res, next) => {
 router.post("/matches/next/:id", async (req, res, next) => {
   const id = req.params.id;
 
-  const winners = await Match.findAll({
-    include: { model: Team, as: "winner" },
-    attributes: ["winnerId", "round"],
-    where: { eventId: id, round: 1 },
-  });
-
-  const teamWinner = winners.map((t) => t.winner.id);
-  console.log("winners id", teamWinner);
-
-  let pairs = [];
-
-  while (teamWinner.length >= 2) {
-    const random1 = Math.random() * teamWinner.length;
-    const team1 = teamWinner.splice(random1, 1)[0];
-
-    const random2 = Math.random() * teamWinner.length;
-    const team2 = teamWinner.splice(random2, 1)[0];
-
-    pairs.push({ charA: team1, charB: team2 });
-  }
-  const nextRound = pairs.map(async (duel) => {
-    const allDuels = await Match.create({
-      teamA: duel.charA,
-      teamB: duel.charB,
-      round: 2,
-      eventId: id,
+  try {
+    const winners = await Match.findAll({
+      include: { model: Team, as: "winner" },
+      attributes: ["winnerId", "round"],
+      where: { eventId: id },
     });
-    return allDuels;
-  });
+    console.log("MATCHES", winners[0].dataValues["round"]);
 
-  await Promise.all(nextRound);
+    let round = winners.map((t) => t.dataValues["round"]);
+    console.log("round: ", round);
+
+    round = Math.max(...round);
+    console.log("after round", round);
+    let teamRound = winners.filter((t) => t.dataValues["round"] === round);
+    let teamWinner = teamRound.map((t) => t.winner.id);
+    console.log("rounds team: ", teamWinner);
+    // console.log("round: ", round);
+    // console.log("winners id", teamWinner);
+    // console.log("round", round);
+    let pairs = [];
+    console.log("TeamWinner", teamWinner);
+
+    while (teamWinner.length >= 2) {
+      const random1 = Math.random() * teamWinner.length;
+      const team1 = teamWinner.splice(random1, 1)[0];
+
+      const random2 = Math.random() * teamWinner.length;
+      const team2 = teamWinner.splice(random2, 1)[0];
+
+      pairs.push({ charA: team1, charB: team2 });
+    }
+
+    const nextRound = pairs.map(async (duel) => {
+      const allDuels = await Match.create({
+        teamA: duel.charA,
+        teamB: duel.charB,
+        round: round + 1,
+        eventId: id,
+      });
+      return allDuels;
+    });
+
+    await Promise.all(nextRound);
+
+    const eventWithMatches = await Events.findByPk(id, {
+      include: {
+        model: Match,
+        include: ["team_A", "team_B"],
+        where: { id: id },
+      },
+    });
+    res.send(eventWithMatches);
+  } catch (e) {
+    console.log(e);
+  }
 });
 
 //Generate next round
